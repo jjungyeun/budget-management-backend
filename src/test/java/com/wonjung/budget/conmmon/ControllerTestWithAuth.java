@@ -26,19 +26,23 @@ public class ControllerTestWithAuth extends ControllerTest {
     private MemberRepository memberRepository;
 
     protected Long memberId;
+    protected String memberAccount = "member_for_test_1";
+    protected String memberPassword = "test123456!";
+    protected String memberNickname = "테스트용 사용자";
+    protected Boolean memberPushOption = true;
     protected String accessToken;
 
     @BeforeEach
     void setUp() throws Exception {
         Member member = memberRepository.save(Member.builder()
-                .account("member_for_test_1")
+                .account(memberAccount)
                 .password("$2a$10$MrzeO291MIulxgrV0N81duNdI8sKKucGqcLvTcbSQTnjgy/CCZGbK")
-                .nickname("테스트용 사용자")
-                .pushOption(true)
+                .nickname(memberNickname)
+                .pushOption(memberPushOption)
                 .build());
         memberId = member.getId();
 
-        LoginDto loginDto = new LoginDto("member_for_test_1", "test123456!");
+        LoginDto loginDto = new LoginDto(memberAccount, memberPassword);
         MvcResult result = mockMvc.perform(post("/api/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginDto)))
