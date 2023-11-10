@@ -1,5 +1,6 @@
 package com.wonjung.budget.entity;
 
+import com.wonjung.budget.exception.CustomException;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.util.Assert;
@@ -37,5 +38,12 @@ public class Member {
         this.password = password;
         this.nickname = nickname;
         this.pushOption = pushOption != null ? pushOption : false;
+    }
+
+    public void edit(String nickname, Boolean pushOption) {
+        Assert.hasText(nickname, "Member nickname must not be empty.");
+
+        this.nickname = nickname;
+        this.pushOption = pushOption != null ? pushOption : this.pushOption;
     }
 }

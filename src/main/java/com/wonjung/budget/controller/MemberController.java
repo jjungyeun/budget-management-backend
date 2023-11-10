@@ -1,6 +1,7 @@
 package com.wonjung.budget.controller;
 
 import com.wonjung.budget.dto.request.MemberCreateDto;
+import com.wonjung.budget.dto.request.MemberEditDto;
 import com.wonjung.budget.dto.response.MemberDetailDto;
 import com.wonjung.budget.entity.Member;
 import com.wonjung.budget.security.AuthenticationPrincipal;
@@ -29,8 +30,20 @@ public class MemberController {
     public ResponseEntity<MemberDetailDto> getMemberDetail(
             @AuthenticationPrincipal Member member
     ) {
-        return ResponseEntity.ok(
-                new MemberDetailDto(member.getAccount(), member.getNickname(), member.getPushOption()
-        ));
+        MemberDetailDto memberDetailDto = MemberDetailDto.builder()
+                .account(member.getAccount())
+                .nickname(member.getNickname())
+                .pushOption(member.getPushOption())
+                .build();
+        return ResponseEntity.ok(memberDetailDto);
+    }
+
+    @PutMapping
+    public ResponseEntity<MemberDetailDto> editMemberDetail(
+            @AuthenticationPrincipal Member member,
+            @Valid @RequestBody MemberEditDto editDto
+    ) {
+        MemberDetailDto memberDetailDto = memberService.editMember(member, editDto);
+        return ResponseEntity.ok(memberDetailDto);
     }
 }
