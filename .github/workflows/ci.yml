@@ -53,7 +53,7 @@ jobs:
           spring.datasource.url: ${{ vars.DB_URL }}
           spring.datasource.username: ${{ vars.DB_NAME }}
           spring.datasource.password: ${{ secrets.DB_PASSWORD }}
-          security.jwt.secret-key: ${{ secrets.JWT_SECRET }}
+          security.jwt.token.secret-key: ${{ secrets.JWT_SECRET }}
 
       - name: gradlew 실행 권한 설정
         run: chmod +x gradlew
