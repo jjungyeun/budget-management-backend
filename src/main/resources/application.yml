@@ -18,6 +18,12 @@ spring:
       hibernate:
         format_sql: true
 
+security:
+  jwt:
+    token:
+      secret-key: ${JWT_SECRET}
+      expiration-in-seconds: 2592000000 #30일
+
 logging:
   level:
     org.hibernate.SQL: debug

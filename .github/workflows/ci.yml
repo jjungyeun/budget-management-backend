@@ -36,14 +36,14 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Setup MySQL
-        uses: samin/mysql-action@v1
+      
+      - name: Set Yaml
+        uses: microsoft/variable-substitution@v1
         with:
-          character set server: 'utf8'
-          mysql database: ${{ vars.DB_NAME }}
-          mysql user: ${{ vars.DB_USERNAME }}
-          mysql password: ${{ secrets.DB_PASSWORD }}
+          files: ./src/main/resources/application-test.yml
+        env:
+          spring.datasource.url: ${{ vars.DB_URL }}
+          security.jwt.token.secret-key: ${{ secrets.JWT_SECRET }}
 
       - name: gradlew 실행 권한 설정
         run: chmod +x gradlew

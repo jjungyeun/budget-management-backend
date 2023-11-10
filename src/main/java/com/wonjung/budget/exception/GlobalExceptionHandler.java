@@ -45,7 +45,10 @@ public class GlobalExceptionHandler {
         StringBuilder errorMessage = new StringBuilder();
 
         for (FieldError fieldError : bindingResult.getFieldErrors()) {
-            errorMessage.append(fieldError.getDefaultMessage()).append("; ");
+            if (!errorMessage.isEmpty()) {
+                errorMessage.append("; ");
+            }
+            errorMessage.append(fieldError.getDefaultMessage());
         }
 
         ErrorResponse response = ErrorResponse.builder()
@@ -53,7 +56,7 @@ public class GlobalExceptionHandler {
                 .message(errorMessage.toString())
                 .build();
 
-        log.error("MethodArgumentNotValidException is occurred.", e);
+        log.error("MethodArgumentNotValidException is occurred: {}", e.getMessage());
         return ResponseEntity.status(response.getErrorCode().getStatus()).body(response);
     }
 
@@ -65,7 +68,7 @@ public class GlobalExceptionHandler {
                 .message(errorCode.getMessage())
                 .build();
 
-        log.error("DataIntegrityViolationException is occurred.", e);
+        log.error("DataIntegrityViolationException is occurred: {}", e.getMessage());
         return ResponseEntity.status(errorCode.getStatus()).body(response);
     }
 
