@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -69,6 +70,18 @@ public class GlobalExceptionHandler {
                 .build();
 
         log.error("DataIntegrityViolationException is occurred: {}", e.getMessage());
+        return ResponseEntity.status(errorCode.getStatus()).body(response);
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingServletRequestParameterException(MissingServletRequestParameterException e) {
+        ErrorCode errorCode = INVALID_REQUEST;
+        ErrorResponse response = ErrorResponse.builder()
+                .errorCode(errorCode)
+                .message(errorCode.getMessage())
+                .build();
+
+        log.error("MissingServletRequestParameterException is occurred: {}", e.getMessage());
         return ResponseEntity.status(errorCode.getStatus()).body(response);
     }
 

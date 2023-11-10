@@ -2,13 +2,19 @@ package com.wonjung.budget.controller;
 
 import com.wonjung.budget.dto.request.ExpenseCreateDto;
 import com.wonjung.budget.dto.response.ExpenseDetailDto;
+import com.wonjung.budget.dto.response.ExpensesResDto;
 import com.wonjung.budget.entity.Member;
+import com.wonjung.budget.exception.CustomException;
+import com.wonjung.budget.exception.ErrorCode;
 import com.wonjung.budget.security.AuthenticationPrincipal;
 import com.wonjung.budget.service.ExpenseService;
+import com.wonjung.budget.type.OrderStatus;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/expenses")
@@ -24,6 +30,37 @@ public class ExpenseController {
     ) {
             Long createdId = expenseService.create(member, createDto);
             return ResponseEntity.ok(createdId);
+    }
+
+    @GetMapping
+    public ResponseEntity<ExpensesResDto> getExpenses(
+            @AuthenticationPrincipal Member member,
+            @RequestParam(value = "start_date") LocalDate startDate,
+            @RequestParam(value = "end_date") LocalDate endDate,
+            @RequestParam(value = "min_amount", required = false, defaultValue = "0") Integer minAmount,
+            @RequestParam(value = "max_amount", required = false) Integer maxAmount,
+            @RequestParam(value = "order_by", required = false, defaultValue = "date:desc") String orderBy,
+            @RequestParam(value = "search", required = false) String search,
+            @RequestParam(value = "category", required = false) String categoryList
+    ) {
+        if (startDate.isAfter(endDate)) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        if (maxAmount == null) {
+            maxAmount = Integer.MAX_VALUE;
+        }
+
+        if (minAmount > maxAmount) {
+            throw new CustomException(ErrorCode.INVALID_REQUEST);
+        }
+
+        OrderStatus orderStatus = OrderStatus.parse(orderBy);
+        String[] categories = categoryList == null || categoryList.isBlank()?
+                new String[]{} : categoryList.split(",");
+
+        ExpensesResDto expenses = expenseService.getExpenses(member, startDate, endDate, minAmount, maxAmount, orderStatus, search, categories);
+        return ResponseEntity.ok(expenses);
     }
 
     @GetMapping("/{expenseId}")
