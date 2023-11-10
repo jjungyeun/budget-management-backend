@@ -11,11 +11,9 @@ spring:
       ddl-auto: create-drop
     properties:
       hibernate:
-        format_sql: true
         jdbc:
           time_zone: Asia/Seoul
           batch_size: 1000
-    show-sql: true
 
   h2:
     console:

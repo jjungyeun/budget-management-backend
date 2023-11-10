@@ -51,4 +51,17 @@ public class Expense {
         this.isExcludedSum = isExcludedSum != null ? isExcludedSum : false;
         this.memo = memo;
     }
+
+    public void edit(Category category, LocalDateTime expendedAt, Integer amount, Boolean isExcludedSum, String memo) {
+        Assert.notNull(category, "Category of expense must not be null.");
+        Assert.notNull(amount, "Expense amount must not be null.");
+        Assert.isTrue(amount > 0, "Expense amount must greater than 0.");
+        Assert.notNull(expendedAt, "Expense datetime must not be null.");
+
+        this.category = category;
+        this.expendedAt = expendedAt;
+        this.amount = amount;
+        this.isExcludedSum = isExcludedSum != null ? isExcludedSum : this.isExcludedSum;
+        this.memo = memo;
+    }
 }
