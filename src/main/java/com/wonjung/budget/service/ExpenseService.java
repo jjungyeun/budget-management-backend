@@ -9,4 +9,8 @@ public interface ExpenseService {
     Long create(Member member, ExpenseCreateDto createDto);
 
     ExpenseDetailDto getDetail(Member member, Long expenseId);
+
+    ExpenseDetailDto edit(Member member, Long expenseId, ExpenseCreateDto editDto);
+
+    void delete(Member member, Long expenseId);
 }

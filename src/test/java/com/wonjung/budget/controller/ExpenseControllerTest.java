@@ -21,8 +21,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -183,6 +182,106 @@ class ExpenseControllerTest extends ControllerTestWithAuth {
                 .andDo(print());
     }
 
+    @Test
+    @DisplayName("지출 수정 - 성공")
+    public void edit_expense() throws Exception {
+        // given
+        // create Expense and get id
+        ExpenseCreateDto createDto = ExpenseCreateDto.builder()
+                .expendedAt(LocalDateTime.of(2023, 11, 9, 17, 12, 0))
+                .amount(12000)
+                .memo("점심으로 마라탕")
+                .isExcludedSum(true)
+                .category("식비")
+                .build();
+
+        MvcResult result = mockMvc.perform(post("/api/expenses")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        String resultStr = result.getResponse().getContentAsString();
+        long expenseId = Long.parseLong(resultStr);
+
+        // for edit
+        ExpenseCreateDto editDto = ExpenseCreateDto.builder()
+                .expendedAt(LocalDateTime.of(2023, 11, 9, 18, 0, 0))
+                .amount(12500)
+                .memo("저녁으로 마라탕")
+                .isExcludedSum(false)
+                .category("식비")
+                .build();
+
+        //when & then
+        mockMvc.perform(put("/api/expenses/{expenseId}", expenseId)
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(editDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.expended_at").value("2023-11-09T18:00:00"))
+                .andExpect(jsonPath("$.amount").value(12500))
+                .andExpect(jsonPath("$.memo").value("저녁으로 마라탕"))
+                .andExpect(jsonPath("$.category").value("식비"))
+                .andExpect(jsonPath("$.is_excluded_sum").value(false))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("지출 수정 - 존재하지 않는 지출 아이디")
+    public void edit_expense_invalid_expense_id() throws Exception {
+        // given
+        ExpenseCreateDto editDto = ExpenseCreateDto.builder()
+                .expendedAt(LocalDateTime.of(2023, 11, 9, 18, 0, 0))
+                .amount(12500)
+                .memo("저녁으로 마라탕")
+                .isExcludedSum(false)
+                .category("식비")
+                .build();
+
+        //when & then
+        mockMvc.perform(put("/api/expenses/{expenseId}", 12345)
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(editDto)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error_code").value(ErrorCode.EXPENSE_NOT_FOUND.name()))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("지출 삭제 - 성공")
+    public void delete_expense() throws Exception {
+        // given
+
+        // create expense and get id
+        ExpenseCreateDto createDto = ExpenseCreateDto.builder()
+                .expendedAt(LocalDateTime.of(2023, 11, 9, 17, 12, 0))
+                .amount(12000)
+                .memo("점심으로 마라탕")
+                .isExcludedSum(true)
+                .category("식비")
+                .build();
+
+        MvcResult result = mockMvc.perform(post("/api/expenses")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andReturn();
+
+        String resultStr = result.getResponse().getContentAsString();
+        long expenseId = Long.parseLong(resultStr);
+
+        //when & then
+        mockMvc.perform(delete("/api/expenses/{expenseId}", expenseId)
+                        .header("Authorization", "Bearer " + accessToken))
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
 
 
 }

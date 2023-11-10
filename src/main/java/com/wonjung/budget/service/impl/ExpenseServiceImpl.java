@@ -28,10 +28,7 @@ public class ExpenseServiceImpl implements ExpenseService {
     @Override
     @Transactional
     public Long create(Member member, ExpenseCreateDto createDto) {
-
-        Category category = categoryRepository.findByName(createDto.category())
-                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
-
+        Category category = getCategoryByName(createDto.category());
         Expense expense = expenseRepository.save(
                 Expense.builder()
                         .member(member)
@@ -42,19 +39,51 @@ public class ExpenseServiceImpl implements ExpenseService {
                         .isExcludedSum(createDto.isExcludedSum())
                         .build()
         );
-
         return expense.getId();
     }
 
     @Override
     public ExpenseDetailDto getDetail(Member member, Long expenseId) {
-        Expense expense = expenseRepository.findByIdAndMember(expenseId, member)
+        Expense expense = getExpenseByMemberAndId(member, expenseId);
+        return getExpenseDetailDto(expense);
+    }
+
+    @Override
+    @Transactional
+    public ExpenseDetailDto edit(Member member, Long expenseId, ExpenseCreateDto editDto) {
+        Expense expense = getExpenseByMemberAndId(member, expenseId);
+        Category category = getCategoryByName(editDto.category());
+        expense.edit(
+                category,
+                editDto.expendedAt(),
+                editDto.amount(),
+                editDto.isExcludedSum(),
+                editDto.memo()
+        );
+        return getExpenseDetailDto(expense);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Member member, Long expenseId) {
+        Expense expense = getExpenseByMemberAndId(member, expenseId);
+        expenseRepository.delete(expense);
+    }
+
+    private Expense getExpenseByMemberAndId(Member member, Long expenseId) {
+        return expenseRepository.findByIdAndMember(expenseId, member)
                 .orElseThrow(() -> new CustomException(ErrorCode.EXPENSE_NOT_FOUND));
+    }
 
+    private Category getCategoryByName(String name) {
+        return categoryRepository.findByName(name)
+                .orElseThrow(() -> new CustomException(ErrorCode.CATEGORY_NOT_FOUND));
+    }
+
+    private ExpenseDetailDto getExpenseDetailDto(Expense expense) {
         String categoryName = expense.getCategory().getName();
-
         return ExpenseDetailDto.builder()
-                .expenseId(expenseId)
+                .expenseId(expense.getId())
                 .expendedAt(expense.getExpendedAt())
                 .amount(expense.getAmount())
                 .category(categoryName)

@@ -34,4 +34,23 @@ public class ExpenseController {
         ExpenseDetailDto detailDto = expenseService.getDetail(member, expenseId);
         return ResponseEntity.ok(detailDto);
     }
+
+    @PutMapping("/{expenseId}")
+    public ResponseEntity<ExpenseDetailDto> editExpense(
+            @AuthenticationPrincipal Member member,
+            @PathVariable Long expenseId,
+            @Valid @RequestBody ExpenseCreateDto editDto
+    ) {
+        ExpenseDetailDto detailDto = expenseService.edit(member, expenseId, editDto);
+        return ResponseEntity.ok(detailDto);
+    }
+
+    @DeleteMapping("/{expenseId}")
+    public ResponseEntity<ExpenseDetailDto> deleteExpense(
+            @AuthenticationPrincipal Member member,
+            @PathVariable Long expenseId
+    ) {
+        expenseService.delete(member, expenseId);
+        return ResponseEntity.ok().build();
+    }
 }
