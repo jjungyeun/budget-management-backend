@@ -18,7 +18,7 @@ public class Category {
     @Column(nullable = false)
     String name;
 
-    @Column
+    @Column(nullable = false)
     Integer averageRate;
 
     @Builder
@@ -26,7 +26,7 @@ public class Category {
         Assert.hasText(name, "Category name must not be empty.");
 
         this.name = name;
-        this.averageRate = averageRate;
+        this.averageRate = averageRate != null? averageRate : 0;
     }
 
     public void updateAverageRate(int averageRate) {
