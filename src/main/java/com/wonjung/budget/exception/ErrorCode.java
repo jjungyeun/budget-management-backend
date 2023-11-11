@@ -26,6 +26,9 @@ public enum ErrorCode {
     // EXPENSE
     EXPENSE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 지출 내역입니다."),
 
+    // BUDGET
+    NEED_ALL_CATEGORIES(HttpStatus.BAD_REQUEST, "모든 카테고리를 포함해야 합니다."),
+
 
     // -------- 5xx Error --------
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버에 문제가 발생했습니다."),
