@@ -18,11 +18,11 @@ public class BudgetController {
     private final BudgetService budgetService;
 
     @PostMapping
-    public ResponseEntity<BudgetsDto> createBudget(
+    public ResponseEntity<BudgetsDto> createOrUpdateBudget(
             @AuthenticationPrincipal Member member,
             @Valid @RequestBody BudgetCreateDto createDto
     ) {
-        BudgetsDto budgetsDto = budgetService.create(member, createDto);
+        BudgetsDto budgetsDto = budgetService.createOrUpdate(member, createDto);
         return ResponseEntity.ok(budgetsDto);
     }
 

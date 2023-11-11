@@ -5,6 +5,6 @@ import com.wonjung.budget.dto.response.BudgetsDto;
 import com.wonjung.budget.entity.Member;
 
 public interface BudgetService {
-    BudgetsDto create(Member member, BudgetCreateDto createDto);
+    BudgetsDto createOrUpdate(Member member, BudgetCreateDto createDto);
     BudgetsDto getBudgets(Member member);
 }

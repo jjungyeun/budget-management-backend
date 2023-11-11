@@ -19,13 +19,17 @@ public class Category {
     String name;
 
     @Column
-    Double averageRate;
+    Integer averageRate;
 
     @Builder
-    public Category(String name, Double averageRate) {
+    public Category(String name, Integer averageRate) {
         Assert.hasText(name, "Category name must not be empty.");
 
         this.name = name;
+        this.averageRate = averageRate;
+    }
+
+    public void updateAverageRate(int averageRate) {
         this.averageRate = averageRate;
     }
 }
