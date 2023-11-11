@@ -33,4 +33,13 @@ public class BudgetController {
         BudgetsDto budgetsDto = budgetService.getBudgets(member);
         return ResponseEntity.ok(budgetsDto);
     }
+
+    @GetMapping("/recommend")
+    public ResponseEntity<BudgetsDto> recommendBudget(
+            @AuthenticationPrincipal Member member,
+            @RequestParam(value = "total_amount") Integer totalAmount
+    ) {
+        BudgetsDto budgetsDto = budgetService.recommend(totalAmount);
+        return ResponseEntity.ok(budgetsDto);
+    }
 }

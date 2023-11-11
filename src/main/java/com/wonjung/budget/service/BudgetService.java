@@ -7,4 +7,5 @@ import com.wonjung.budget.entity.Member;
 public interface BudgetService {
     BudgetsDto createOrUpdate(Member member, BudgetCreateDto createDto);
     BudgetsDto getBudgets(Member member);
+    BudgetsDto recommend(int totalAmount);
 }

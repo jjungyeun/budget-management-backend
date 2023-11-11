@@ -194,4 +194,34 @@ class BudgetControllerTest extends ControllerTestWithAuth {
                 .andDo(print());
     }
 
+    @Test
+    @DisplayName("예산 추천 - 성공")
+    public void recommend_budget() throws Exception {
+        // given
+        // set budgets
+        List<BudgetCreateDto.BudgetDto> budgetDtos = categories.keySet().stream().map(categoryId ->
+                new BudgetCreateDto.BudgetDto(categoryId, (int) (10000 * categoryId))
+        ).toList();
+        BudgetCreateDto createDto = new BudgetCreateDto(budgetDtos);
+
+        mockMvc.perform(post("/api/budgets")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.budgets.length()").value(categories.size()))
+                .andDo(print());
+
+        // when & then
+        mockMvc.perform(get("/api/budgets/recommend")
+                        .param("total_amount", "100000")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.budgets.length()").value(categories.size()))
+                .andExpect(jsonPath("$.budgets[0].amount").isNumber())
+                .andDo(print());
+    }
+
 }

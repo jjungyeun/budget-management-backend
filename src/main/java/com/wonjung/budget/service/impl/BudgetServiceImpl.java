@@ -109,6 +109,35 @@ public class BudgetServiceImpl implements BudgetService {
         return new BudgetsDto(responses);
     }
 
+    @Override
+    public BudgetsDto recommend(int totalAmount) {
+        int rest = totalAmount;
+        List<BudgetsDto.BudgetDto> responses = new ArrayList<>();
+        List<Category> categories = categoryRepository.findAll();
+
+        for (Category category : categories) {
+            // 기타 카테고리는 별도 계산
+            if (category.getName().equals(CategoryType.ETC.getKo())) {
+                continue;
+            }
+
+            int categoryBudget = getCategoryBudget(totalAmount, category);
+            rest -= categoryBudget;
+            responses.add(new BudgetsDto.BudgetDto(category.getId(), category.getName(), categoryBudget));
+        }
+
+        // 나머지 금액은 전부 기타 카테고리로 제공
+        Optional<Category> etcOptional = categories.stream()
+                .filter(it -> it.getName().equals(CategoryType.ETC.getKo()))
+                .findFirst();
+        if (etcOptional.isPresent()) {
+            Category etcCategory = etcOptional.get();
+            responses.add(new BudgetsDto.BudgetDto(etcCategory.getId(), etcCategory.getName(), (rest / 1000) * 1000));
+        }
+
+        return new BudgetsDto(responses);
+    }
+
     private void updateCategoryAverage(Map<Long, Category> categories, List<Budget> memberBudgets, Member member) {
         int restRate = 100;
         long memberBudgetSum = memberBudgets.stream().mapToLong(Budget::getAmount).sum();
@@ -148,4 +177,11 @@ public class BudgetServiceImpl implements BudgetService {
         long categorySum = categoryAverageRate * categoryCount;
         return (int) ((categorySum + memberRate) / (categoryCount + 1));
     }
+
+    private int getCategoryBudget(int totalAmount, Category category) {
+        // 평균 10% 미만 카테고리는 추천 금액 제시 안함
+        int averageRate = category.getAverageRate();
+        return averageRate >= 10 ? ((totalAmount * averageRate) / (100 * 1000)) * 1000 : 0;
+    }
+
 }
