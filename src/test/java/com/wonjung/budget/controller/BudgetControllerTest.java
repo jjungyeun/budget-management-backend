@@ -6,9 +6,11 @@ import com.wonjung.budget.entity.Budget;
 import com.wonjung.budget.entity.Category;
 import com.wonjung.budget.entity.Member;
 import com.wonjung.budget.exception.ErrorCode;
+import com.wonjung.budget.repository.BudgetRepository;
 import com.wonjung.budget.repository.CategoryRepository;
 import com.wonjung.budget.repository.MemberRepository;
 import com.wonjung.budget.service.BudgetService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -32,6 +33,8 @@ class BudgetControllerTest extends ControllerTestWithAuth {
     private CategoryRepository categoryRepository;
     @Autowired
     private MemberRepository memberRepository;
+    @Autowired
+    private BudgetRepository budgetRepository;
     @Autowired
     private BudgetService budgetService;
 
@@ -55,7 +58,7 @@ class BudgetControllerTest extends ControllerTestWithAuth {
     public void create_budget() throws Exception {
         // given
         List<BudgetCreateDto.BudgetDto> budgetDtos = categories.keySet().stream().map(categoryId ->
-                new BudgetCreateDto.BudgetDto(categoryId, (int) (100000 * categoryId))
+                new BudgetCreateDto.BudgetDto(categoryId, (int) (10000 * categoryId))
         ).toList();
         BudgetCreateDto createDto = new BudgetCreateDto(budgetDtos);
 
@@ -67,6 +70,53 @@ class BudgetControllerTest extends ControllerTestWithAuth {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.budgets.length()").value(categories.size()))
                 .andDo(print());
+
+        List<Category> newCategories = categoryRepository.findAll();
+        for (Category newCategory : newCategories) {
+            Assertions.assertNotNull(newCategory.getAverageRate());
+        }
+    }
+
+    @Test
+    @DisplayName("예산 설정 - 업데이트 성공")
+    public void update_budget() throws Exception {
+        // given
+        // set budgets
+        List<BudgetCreateDto.BudgetDto> budgetDtos = new java.util.ArrayList<>(
+                categories.keySet().stream().map(categoryId ->
+                new BudgetCreateDto.BudgetDto(categoryId, (int) (10000 * categoryId))
+        ).toList());
+        BudgetCreateDto createDto = new BudgetCreateDto(budgetDtos);
+
+        mockMvc.perform(post("/api/budgets")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.budgets.length()").value(categories.size()))
+                .andDo(print());
+
+        Category categoryToUpdate = categories.get(budgetDtos.get(0).categoryId());
+        Member member = memberRepository.findById(memberId).get();
+        int amountBefore = budgetRepository.findByMemberAndCategory(member, categoryToUpdate)
+                .get()
+                .getAmount();
+
+        // for update
+        budgetDtos.remove(0);
+        budgetDtos.add(new BudgetCreateDto.BudgetDto(categoryToUpdate.getId(), amountBefore + 50000));
+
+        // when & then
+        mockMvc.perform(post("/api/budgets")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.budgets.length()").value(categories.size()))
+                .andDo(print());
+
+        Budget budgetAfter = budgetRepository.findByMemberAndCategory(member, categoryToUpdate).get();
+        Assertions.assertEquals(amountBefore + 50000, budgetAfter.getAmount());
     }
 
     @Test
@@ -121,7 +171,7 @@ class BudgetControllerTest extends ControllerTestWithAuth {
                 new BudgetCreateDto.BudgetDto(categoryId, (int) (100000 * categoryId))
         ).toList();
         BudgetCreateDto createDto = new BudgetCreateDto(budgetDtos);
-        budgetService.create(member, createDto);
+        budgetService.createOrUpdate(member, createDto);
 
         // when & then
         mockMvc.perform(get("/api/budgets")
