@@ -15,10 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,9 +41,15 @@ public class BudgetServiceImpl implements BudgetService {
             throw new CustomException(ErrorCode.NEED_ALL_CATEGORIES);
         }
 
+        // 카테고리 아이디 순으로 정렬
+        List<BudgetCreateDto.BudgetDto> budgetDtos = createDto.budgets().stream()
+                .sorted((o1, o2) -> (int) (o1.categoryId() - o2.categoryId()))
+                .toList();
+
+        // 사용자가 입력한 값으로 예산 생성 또는 업데이트
         List<Budget> budgets = new ArrayList<>();
         List<BudgetsDto.BudgetDto> responses = new ArrayList<>();
-        for (BudgetCreateDto.BudgetDto budgetDto : createDto.budgets()) {
+        for (BudgetCreateDto.BudgetDto budgetDto : budgetDtos) {
             if (!categories.containsKey(budgetDto.categoryId())) {
                 throw new CustomException(ErrorCode.CATEGORY_NOT_FOUND);
             }
