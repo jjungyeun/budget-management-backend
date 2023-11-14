@@ -57,7 +57,7 @@ public class ExpenseRepositoryImpl implements ExpenseRepositoryCustom {
                         expense.isExcludedSum.isFalse(),
                         dateBetween(startDate, endDate)
                 )
-                .groupBy(category)
+                .groupBy(category.id)
                 .orderBy(category.id.asc())
                 .fetch()
                 .stream().collect(Collectors.toMap(
