@@ -4,10 +4,7 @@ import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.wonjung.budget.entity.Expense;
-import com.wonjung.budget.entity.Member;
-import com.wonjung.budget.entity.QCategory;
-import com.wonjung.budget.entity.QExpense;
+import com.wonjung.budget.entity.*;
 import com.wonjung.budget.repository.ExpenseRepositoryCustom;
 import com.wonjung.budget.type.OrderDirection;
 import com.wonjung.budget.type.OrderStatus;
@@ -19,6 +16,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.wonjung.budget.entity.QCategory.*;
 import static com.wonjung.budget.entity.QExpense.*;
@@ -46,6 +45,25 @@ public class ExpenseRepositoryImpl implements ExpenseRepositoryCustom {
             return query.orderBy(orderByAmount(orderStatus))
                     .fetch();
         }
+    }
+
+    @Override
+    public Map<Category, Integer> getExpenseSumByMemberBetweenDateGroupByCategory(Member member, LocalDate startDate, LocalDate endDate) {
+        return queryFactory.select(category, expense.amount.sum())
+                .from(expense)
+                .leftJoin(expense.category, category)
+                .where(
+                        expense.member.eq(member),
+                        expense.isExcludedSum.isFalse(),
+                        dateBetween(startDate, endDate)
+                )
+                .groupBy(category)
+                .orderBy(category.id.asc())
+                .fetch()
+                .stream().collect(Collectors.toMap(
+                        tuple -> tuple.get(category),
+                        tuple -> tuple.get(expense.amount.sum())
+                ));
     }
 
     private BooleanExpression dateBetween(LocalDate start, LocalDate end) {

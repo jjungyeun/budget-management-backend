@@ -28,6 +28,7 @@ public enum ErrorCode {
 
     // BUDGET
     NEED_ALL_CATEGORIES(HttpStatus.BAD_REQUEST, "모든 카테고리를 포함해야 합니다."),
+    NO_BUDGET(HttpStatus.NOT_FOUND, "설정된 예산 정보가 없습니다. 예산을 먼저 설정해주세요."),
 
 
     // -------- 5xx Error --------
