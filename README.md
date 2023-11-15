@@ -8,9 +8,10 @@
 
 - [개요](#개요)
 - [Skils](#skils)
-- [Running Tests](#running-tests)
-- [API Reference](#api-reference)
 - [프로젝트 진행 및 이슈 관리](#프로젝트-진행-및-이슈-관리)
+- [ERD](#erd)
+- [API Reference](#api-reference)
+- [Running Tests](#running-tests)
 - [구현과정(설계 및 의도)](#구현과정(설계-및-의도))
 - [TIL 및 회고](#til-및-회고)
 - [References](#references)
@@ -34,10 +35,26 @@
 
 <br/>
 
-## Running Tests
+## 프로젝트 진행 및 이슈 관리
 
-> Test Result ScreenShot ![Static Badge](https://img.shields.io/badge/Test_Passed-36/36-green)
-![test_result](https://github.com/jjungyeun/budget-management-backend/assets/29030538/b98f4a3b-ee16-4ecd-908b-99af88b52f18)
+![Notion](https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white)
+<img src="https://img.shields.io/badge/Github-181717?style=for-the-badge&logo=Github&logoColor=white">
+
+
+### 요구사항 분석 및 일정 관리 - Notion
+
+[요구사항 분석 - Link](https://wonwonjung.notion.site/7d25f7d956b74345b9bce7d973d951cf?pvs=4)
+
+![task-management](https://github.com/jjungyeun/budget-management-backend/assets/29030538/0ffadc3e-b82a-495f-8c1b-78e86f0f36c0)
+
+### 이슈 관리 - Github
+![issue-management](https://github.com/jjungyeun/budget-management-backend/assets/29030538/57a012cb-5ddc-448e-baee-a9052fb66e3b)
+
+<br/>
+
+## ERD
+![erd](https://github.com/jjungyeun/budget-management-backend/assets/29030538/f48aac0b-de6c-4feb-87ca-8d2a86c0e5e3)
+
 
 <br/>
 
@@ -669,10 +686,10 @@ Authentication: Bearer {JWT}
 
 <br/>
 
-## 프로젝트 진행 및 이슈 관리
+## Running Tests
 
-![Notion](https://img.shields.io/badge/Notion-%23000000.svg?style=for-the-badge&logo=notion&logoColor=white)
-<img src="https://img.shields.io/badge/Github-181717?style=for-the-badge&logo=Github&logoColor=white">
+> Test Result ScreenShot ![Static Badge](https://img.shields.io/badge/Test_Passed-36/36-green)
+![test_result](https://github.com/jjungyeun/budget-management-backend/assets/29030538/b98f4a3b-ee16-4ecd-908b-99af88b52f18)
 
 <br/>
 
