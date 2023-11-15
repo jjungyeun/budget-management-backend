@@ -12,8 +12,8 @@
 - [ERD](#erd)
 - [API Reference](#api-reference)
 - [Running Tests](#running-tests)
-- [구현과정(설계 및 의도)](#구현과정(설계-및-의도))
-- [TIL 및 회고](#til-및-회고)
+- [구현과정(설계 및 의도)](#구현과정설계-및-의도)
+- [TIL 및 회고](#tiltoday-i-learn-및-회고)
 - [References](#references)
 
 <br/>
@@ -28,10 +28,26 @@
 
 ## Skils
 
-언어 및
-프레임워크: ![Static Badge](https://img.shields.io/badge/JAVA-17-blue) ![Static Badge](https://img.shields.io/badge/SpringBoot-3.1.5-green)<br/>
-데이터베이스: ![Static Badge](https://img.shields.io/badge/MySQL-blue)<br/>
-배포 : ![Static Badge](https://img.shields.io/badge/Docker-blue) ![Static Badge](https://img.shields.io/badge/AWS-EC2-orange) ![Static Badge](https://img.shields.io/badge/Github-Actions-orange)  <br/>
+<div align=center> 
+<img src="https://img.shields.io/badge/java-007396?style=for-the-badge&logo=java&logoColor=white">
+<img src="https://img.shields.io/badge/spring boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white">
+<img src="https://img.shields.io/badge/spring data jpa-6DB33F?style=for-the-badge&logo=spring&logoColor=white">
+<img src="https://img.shields.io/badge/junit5-25A162?style=for-the-badge&logo=junit5&logoColor=white">
+<img src="https://img.shields.io/badge/mysql-4479A1?style=for-the-badge&logo=mysql&logoColor=white">
+<img src="https://img.shields.io/badge/h2-4479A1?style=for-the-badge">
+
+<br/>
+
+<img src="https://img.shields.io/badge/docker-2496ED?style=for-the-badge&logo=docker&logoColor=white">
+<img src="https://img.shields.io/badge/Github Actions-2088FF?style=for-the-badge&logo=Githubactions&logoColor=white">
+<img src="https://img.shields.io/badge/AWS Ec2-FF9900?style=for-the-badge&logo=amazonec2&logoColor=white">
+
+<br/>
+
+<img src="https://img.shields.io/badge/Github-181717?style=for-the-badge&logo=Github&logoColor=white">
+<img src="https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white">
+<img src="https://img.shields.io/badge/erd cloud-%23000000.svg?style=for-the-badge&logo=diagrams.net&logoColor=white">
+</div>
 
 <br/>
 
@@ -695,6 +711,62 @@ Authentication: Bearer {JWT}
 
 ## 구현과정(설계 및 의도)
 
+
+<details>
+
+<summary>DB Primary Key 선정 - click</summary>
+
+#### 논의 사항
+
+- 각 테이블의 unique한 컬럼(또는 컬럼의 조합)을 PK로 사용하는 것이 좋을지, 아니면 서비스 내부적으로만 사용되는 임의의 ID 컬럼을 추가하여 사용하는 것이 좋을지
+
+#### 조사 내용
+
+- 별도 ID 컬럼이 필요한 이유
+  - 실무에서는 언젠가 요구조건이 바뀔 수 있기 때문에 비즈니스와 관련 없는 컬럼을 ID로 지정하는 것이 좋다.
+  - 비즈니스와 관련된 컬럼을 PK로 지정하게 되면 해당 컬럼에 대한 요구조건이 변경될 경우 이를 FK로 사용하는 모든 테이블에 영향이 간다.
+  - 단, 컬럼이 명확한 값을 가지며 PK조건을 완전히 만족하고, 미래에도 변할 가능성이 없다면 PK로 설정해도 좋다.
+- Auto Increment ID
+  - 분산형 시스템 사용 시 여러 데이터베이스 끼리 동기화가 잘 이루어지지 않으면, ID가 중복되어 생성될 수 있다.
+  - 키를 예측하기 쉽기 때문에 SQL Injection 공격에 취약해질 수 있다.
+- UUID
+  - 100% unique한 것은 아니지만 충돌할 가능성이 굉장히 낮다. (10^-38 정도의 확률)
+  - UUID를 사용하려면 BINARY(16), VARCHAR 등을 사용해야 한다.
+    - int 타입을 쓰는 auto increment보다 메모리를 더 많이 차지하고, 서버에서 UUID를 생성해서 넣어줘야 하므로 INSERT 시간이 더 걸린다는 단점이 있다.
+
+#### 결론
+
+- 단일 DB라면 AUTO_INCREMENT 사용, 다중 DB를 사용하는 분산형 환경이면 데이터 일관성을 위해 UUID를 사용하는 것을 고려하는 것이 좋다.
+- `보드미`에서는 단일 DB를 사용하며 id가 예측되는 상황에 예민하지 않기 때문에 Auto Increment ID를 PK로 사용하였다.
+  - 단, 보드마다 보드 코드를 UUID로 생성하여 보드에 접근하는 URL에는 숫자 키가 아닌 코드를 사용하였다.
+
+</details>
+
+<details>
+<summary>엔티티 생성 방식 - click</summary>
+
+#### 가능한 방식
+
+1. 생성자
+  - 모든 필드를 포함한 생성자를 만들어 사용한다.
+  - 필드가 많은 경우 생성자 사용시 인자를 넣는 순서가 헷갈릴 수 있다.
+2. static 생성 메서드
+  - 엔티티 생성 과정에서 비즈니스 로직이 들어가거나, 의미있는 메서드 이름이 필요한 경우세 사용한다.
+  - 1번 방식과 마찬가지로 파라미터가 많으면 사용에 어려움을 느낄 수 있다.
+3. Builder
+  - builder 패턴을 활용하여 파라미터가 많은 경우 사용성을 높일 수 있다.
+    - Lombok의 `@Builder`를 사용하여 간편하게 만들 수 있다.
+
+#### 결론
+
+- 필드가 적은 경우(2개 이하)에만 생성자 방식을 사용하고 그 외에는 모두 Builder 방식을 사용하기로 결정하였다.
+- 생성자(Builder 포함) 파라미터에서 DB의 PK가 되는 id를 제외하여 개발자가 실수로 id를 지정하지 않도록 하였다.
+- 생성자(Builder 포함) 내에 엔티티 필드의 유효성을 검증하는 로직을 추가하였다.
+  - ex) 보드의 `startDate`는 `endDate` 보다 이후일 수 없다.
+
+</details>
+
+
 <details>
 <summary>Custom 예외 클래스 구현 - click</summary>
 
@@ -733,30 +805,10 @@ public enum ErrorCode {
 
 </details>
 
-<details>
-<summary>카테고리별 예산 평균 계산의 비동기 처리 - click</summary>
-
-- 현재 작성된 코드는 사용자가 예산을 설정할 때마다 카테고리별 비율을 계산하여 카테고리 테이블을 업데이트 한다.
-- 카테고리별 예산 평균의 경우 실시간성이 중요한 정보가 아니기 때문에 비동기처리하여 사용자가 예산 설정 시 계산 과정을 기다리지 않도록 할 수 있다.
-- **추후 구현 예정**
-
-</details>
-
-<details>
-<summary>JWT 인증 필터 적용 - click</summary>
-
-- 현재 작성된 코드는 인증이 필요한 API에 인증용 어노테이션을 붙여 JWT로부터 사용자 정보를 알아낸다.
-- 본 서비스에서는 회원가입 및 로그인을 제외하고 모든 API에 인증이 필요하므로, 전체 API에 인증을 적용하고 두 API를 제외하는 것이 알맞다.
-  - 인증 어노테이션을 깜빡하는 실수를 방지할 수 있으며, 매번 어노테이션을 다는 반복 코드도 줄일 수 있다.
-- 서블릿 필터로 인증 필터를 만들고 두 API만 제외하여 적용하면 앞으로 추가되는 API에도 자동으로 인증을 적용할 수 있다.
-- **추후 구현 예정**
-
-</details>
-
 <br/>
 
 
-## TIL 및 회고
+## TIL(Today I Learn) 및 회고
 
 <details>
 <summary>QueryDsl로 다이나믹 쿼리 생성하기 - click</summary>
@@ -799,6 +851,26 @@ public record MemberDetailDto(
         Boolean pushOption
 ) { }
 ```
+
+</details>
+
+<details>
+<summary>카테고리별 예산 평균 계산의 비동기 처리 - click</summary>
+
+- 현재 작성된 코드는 사용자가 예산을 설정할 때마다 카테고리별 비율을 계산하여 카테고리 테이블을 업데이트 한다.
+- 카테고리별 예산 평균의 경우 실시간성이 중요한 정보가 아니기 때문에 비동기처리하여 사용자가 예산 설정 시 계산 과정을 기다리지 않도록 할 수 있다.
+- **추후 구현 예정**
+
+</details>
+
+<details>
+<summary>JWT 인증 필터 적용 - click</summary>
+
+- 현재 작성된 코드는 인증이 필요한 API에 인증용 어노테이션을 붙여 JWT로부터 사용자 정보를 알아낸다.
+- 본 서비스에서는 회원가입 및 로그인을 제외하고 모든 API에 인증이 필요하므로, 전체 API에 인증을 적용하고 두 API를 제외하는 것이 알맞다.
+  - 인증 어노테이션을 깜빡하는 실수를 방지할 수 있으며, 매번 어노테이션을 다는 반복 코드도 줄일 수 있다.
+- 서블릿 필터로 인증 필터를 만들고 두 API만 제외하여 적용하면 앞으로 추가되는 API에도 자동으로 인증을 적용할 수 있다.
+- **추후 구현 예정**
 
 </details>
 
